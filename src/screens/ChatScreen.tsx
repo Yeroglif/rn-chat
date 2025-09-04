@@ -13,11 +13,18 @@ import { getUserId } from "../utils/generateUserId";
 import { LoadingSpinner } from "../components/common/LoadingSpinner";
 import { MessageList } from "../components/chat/MessageList";
 import { MessageInput } from "../components/chat/MessageInput";
+import { RouteProp, useRoute } from "@react-navigation/native";
+import { RootStackParamList } from "../types";
+
+type ChatScreenRouteProp = RouteProp<RootStackParamList, "Chat">;
 
 export const ChatScreen: React.FC = () => {
   const [currentUserId, setCurrentUserId] = useState<string>("");
   const [userIdLoading, setUserIdLoading] = useState(true);
-  const { messages, loading, error, sendMessage, refetch } = useMessages();
+  const route = useRoute<ChatScreenRouteProp>();
+  const { chatId } = route.params;
+  const { messages, loading, error, sendMessage, refetch } =
+    useMessages(chatId);
 
   useEffect(() => {
     const initializeUserId = async () => {
