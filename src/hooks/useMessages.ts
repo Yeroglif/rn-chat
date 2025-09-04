@@ -2,17 +2,20 @@ import { useState, useEffect } from "react";
 import { supabase } from "../services/supabase";
 import { Message } from "../types";
 
-export const useMessages = () => {
+export const useMessages = (chatId: string | null) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchMessages = async () => {
+    if (!chatId) return;
+
     try {
       setLoading(true);
       const { data, error } = await supabase
         .from("messages")
         .select("*")
+        .eq("chat_id", chatId)
         .order("created_at", { ascending: true });
 
       if (error) throw error;
@@ -25,10 +28,12 @@ export const useMessages = () => {
   };
 
   const sendMessage = async (content: string, userId: string) => {
+    if (!chatId) return;
+
     try {
       const { error } = await supabase
         .from("messages")
-        .insert([{ content, user_id: userId }]);
+        .insert([{ content, user_id: userId, chat_id: chatId }]);
 
       if (error) throw error;
     } catch (err) {
@@ -37,16 +42,19 @@ export const useMessages = () => {
   };
 
   useEffect(() => {
+    if (!chatId) return;
+
     fetchMessages();
 
     const channel = supabase
-      .channel("messages_channel")
+      .channel(`messages_${chatId}`)
       .on(
         "postgres_changes",
         {
           event: "INSERT",
           schema: "public",
           table: "messages",
+          filter: `chat_id=eq.${chatId}`,
         },
         (payload) => {
           const newMessage = payload.new as Message;
@@ -58,7 +66,7 @@ export const useMessages = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [chatId]);
 
   return {
     messages,
