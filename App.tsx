@@ -25,7 +25,7 @@ export default function App() {
             name="ChatList"
             component={ChatListScreen}
             options={({ navigation }) => ({
-              title: "Expenses",
+              title: "Chat",
               headerRight: () => (
                 <TouchableOpacity
                   onPress={() => navigation.navigate("Settings")}
