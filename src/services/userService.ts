@@ -35,4 +35,17 @@ export const userService = {
       throw error;
     }
   },
+  async searchUsers(query: string): Promise<string[]> {
+    if (!query.trim()) return [];
+
+    const { data, error } = await supabase
+      .from("users")
+      .select("id")
+      .ilike("id", `%${query}%`);
+
+    if (error) throw error;
+
+    const uniqueUsers = [...new Set(data?.map((m) => m.id) || [])];
+    return uniqueUsers;
+  },
 };

@@ -11,13 +11,13 @@ import {
   ActivityIndicator,
   Alert,
 } from "react-native";
-import { chatService } from "../../services/chatService";
+import { userService } from "../../services/userService";
 
 interface UserSearchModalProps {
   visible: boolean;
   onClose: () => void;
   onStartChat: (userId: string) => void;
-  currentUserId: string;
+  currentUserId: string | null;
 }
 
 export const UserSearchModal: React.FC<UserSearchModalProps> = ({
@@ -41,8 +41,7 @@ export const UserSearchModal: React.FC<UserSearchModalProps> = ({
 
     try {
       setSearching(true);
-      const results = await chatService.searchUsers(query);
-      // Filter out current user from results
+      const results = await userService.searchUsers(query);
       const filteredResults = results.filter(
         (userId) => userId !== currentUserId
       );
@@ -62,7 +61,6 @@ export const UserSearchModal: React.FC<UserSearchModalProps> = ({
     }
 
     onStartChat(selectedUserId);
-    // Reset modal state
     setSearchQuery("");
     setSearchResults([]);
     setSelectedUserId(null);

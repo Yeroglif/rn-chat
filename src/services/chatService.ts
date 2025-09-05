@@ -93,18 +93,4 @@ export const chatService = {
 
     return data?.map((p) => p.user_id) || [];
   },
-
-  async searchUsers(query: string): Promise<string[]> {
-    if (!query.trim()) return [];
-
-    const { data, error } = await supabase
-      .from("messages")
-      .select("user_id")
-      .ilike("user_id", `%${query}%`);
-
-    if (error) throw error;
-
-    const uniqueUsers = [...new Set(data?.map((m) => m.user_id) || [])];
-    return uniqueUsers;
-  },
 };
