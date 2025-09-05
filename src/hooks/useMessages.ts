@@ -27,13 +27,19 @@ export const useMessages = (chatId: string | null) => {
     }
   };
 
-  const sendMessage = async (content: string, userId: string) => {
+  const sendMessage = async (
+    content: string,
+    userId: string,
+    photo_uri?: string,
+  ) => {
     if (!chatId) return;
 
     try {
       const { error } = await supabase
         .from("messages")
-        .insert([{ content, user_id: userId, chat_id: chatId }]);
+        .insert([
+          { content, user_id: userId, chat_id: chatId, photo_uri: photo_uri },
+        ]);
 
       if (error) throw error;
     } catch (err) {

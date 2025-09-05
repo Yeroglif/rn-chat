@@ -4,6 +4,7 @@ export interface Message {
   content: string;
   created_at: string;
   chat_id: string;
+  photo_uri?: string
 }
 
 export interface Chat {

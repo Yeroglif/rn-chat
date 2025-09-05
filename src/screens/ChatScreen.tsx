@@ -61,11 +61,11 @@ export const ChatScreen: React.FC = () => {
     loadCurrentUserName();
   }, [currentUserId]);
 
-  const handleSendMessage = async (content: string) => {
+  const handleSendMessage = async (content: string, photo_uri?: string) => {
     if (!currentUserId) return;
 
     try {
-      await sendMessage(content, currentUserId);
+      await sendMessage(content, currentUserId, photo_uri);
     } catch (err) {
       Alert.alert("Error", "Failed to send message. Please try again.");
     }

@@ -4,16 +4,16 @@ import {
   View,
   TextInput,
   TouchableOpacity,
-  Text,
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
   NativeSyntheticEvent,
   TextInputKeyPressEventData,
 } from "react-native";
+import PhotoPicker from "./PhotoPicker";
 
 interface MessageInputProps {
-  onSendMessage: (message: string) => void;
+  onSendMessage: (message: string, photoUri?: string) => void;
   disabled?: boolean;
 }
 
@@ -22,12 +22,14 @@ export const MessageInput: React.FC<MessageInputProps> = ({
   disabled = false,
 }) => {
   const [message, setMessage] = useState("");
+  const [photoUri, setPhotoUri] = useState<string | undefined>(undefined);
 
   const handleSend = () => {
-    if (message.trim() && !disabled) {
-      onSendMessage(message.trim());
-      setMessage("");
-    }
+    if ((!message.trim() && !photoUri) || disabled) return;
+
+    onSendMessage(message.trim(), photoUri);
+    setMessage("");
+    setPhotoUri(undefined);
   };
 
   return (
@@ -58,22 +60,27 @@ export const MessageInput: React.FC<MessageInputProps> = ({
           }}
         />
 
+        <PhotoPicker
+          photoUri={photoUri}
+          onPhotoSelected={(uri) => setPhotoUri(uri)}
+          onPhotoRemoved={() => setPhotoUri(undefined)}
+        />
+
         <TouchableOpacity
           style={[
             styles.sendButton,
-            (!message.trim() || disabled) && styles.sendButtonDisabled,
+            ((!message.trim() && !photoUri) || disabled) &&
+              styles.sendButtonDisabled,
           ]}
           onPress={handleSend}
-          disabled={!message.trim() || disabled}
+          disabled={(!message.trim() && !photoUri) || disabled}
         >
-          <Text
-            style={[
-              styles.sendButtonText,
-              (!message.trim() || disabled) && styles.sendButtonTextDisabled,
-            ]}
-          >
-            <SendHorizonal />
-          </Text>
+          <SendHorizonal
+            color={
+              (!message.trim() && !photoUri) || disabled ? "#aaa" : "#007AFF"
+            }
+            size={24}
+          />
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>

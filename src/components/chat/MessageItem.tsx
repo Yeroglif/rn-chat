@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, Image } from "react-native";
 import { Message } from "../../types";
 
 interface MessageItemProps {
@@ -32,14 +32,26 @@ export const MessageItem: React.FC<MessageItemProps> = ({
         {!isCurrentUser && (
           <Text style={styles.username}>{message.user_id}</Text>
         )}
-        <Text
-          style={[
-            styles.messageText,
-            isCurrentUser ? styles.currentUserText : styles.otherUserText,
-          ]}
-        >
-          {message.content}
-        </Text>
+
+        {message.content ? (
+          <Text
+            style={[
+              styles.messageText,
+              isCurrentUser ? styles.currentUserText : styles.otherUserText,
+            ]}
+          >
+            {message.content}
+          </Text>
+        ) : null}
+
+        {message.photo_uri ? (
+          <Image
+            source={{ uri: message.photo_uri }}
+            style={styles.messageImage}
+            resizeMode="cover"
+          />
+        ) : null}
+
         <Text
           style={[
             styles.timestamp,
@@ -58,52 +70,59 @@ export const MessageItem: React.FC<MessageItemProps> = ({
 const styles = StyleSheet.create({
   container: {
     marginVertical: 4,
-    paddingHorizontal: 16,
+    flexDirection: "row",
   },
   currentUser: {
-    alignItems: "flex-end",
+    justifyContent: "flex-end",
   },
   otherUser: {
-    alignItems: "flex-start",
+    justifyContent: "flex-start",
   },
   messageBubble: {
     maxWidth: "80%",
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 16,
+    padding: 10,
+    borderRadius: 12,
   },
   currentUserBubble: {
     backgroundColor: "#007AFF",
-    borderBottomRightRadius: 4,
+    borderBottomRightRadius: 0,
   },
   otherUserBubble: {
     backgroundColor: "#E5E5EA",
-    borderBottomLeftRadius: 4,
+    borderBottomLeftRadius: 0,
   },
   username: {
     fontSize: 12,
-    fontWeight: "600",
-    color: "#666",
-    marginBottom: 2,
+    fontWeight: "bold",
+    marginBottom: 4,
+    color: "#555",
   },
   messageText: {
     fontSize: 16,
-    lineHeight: 20,
+    marginBottom: 4,
   },
   currentUserText: {
-    color: "#FFFFFF",
+    color: "white",
   },
   otherUserText: {
-    color: "#000000",
+    color: "black",
+  },
+  messageImage: {
+    width: 200,
+    height: 150,
+    borderRadius: 8,
+    marginTop: 4,
+    marginBottom: 4,
   },
   timestamp: {
-    fontSize: 11,
+    fontSize: 10,
     marginTop: 4,
+    textAlign: "right",
   },
   currentUserTimestamp: {
-    color: "rgba(255, 255, 255, 0.7)",
+    color: "rgba(255,255,255,0.7)",
   },
   otherUserTimestamp: {
-    color: "#666",
+    color: "rgba(0,0,0,0.6)",
   },
 });
