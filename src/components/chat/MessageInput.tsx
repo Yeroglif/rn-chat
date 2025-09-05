@@ -1,3 +1,4 @@
+import { SendHorizonal } from "lucide-react-native";
 import React, { useState } from "react";
 import {
   View,
@@ -7,6 +8,8 @@ import {
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
+  NativeSyntheticEvent,
+  TextInputKeyPressEventData,
 } from "react-native";
 
 interface MessageInputProps {
@@ -29,7 +32,8 @@ export const MessageInput: React.FC<MessageInputProps> = ({
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      keyboardVerticalOffset={100}
       style={styles.container}
     >
       <View style={styles.inputContainer}>
@@ -41,9 +45,19 @@ export const MessageInput: React.FC<MessageInputProps> = ({
           multiline
           maxLength={500}
           editable={!disabled}
-          onSubmitEditing={handleSend}
-          blurOnSubmit={false}
+          submitBehavior="newline"
+          onKeyPress={(e: NativeSyntheticEvent<TextInputKeyPressEventData>) => {
+            if (Platform.OS === "web") {
+              const keyEvent = e.nativeEvent as unknown as KeyboardEvent;
+
+              if (e.nativeEvent.key === "Enter" && !keyEvent.shiftKey) {
+                e.preventDefault?.();
+                handleSend();
+              }
+            }
+          }}
         />
+
         <TouchableOpacity
           style={[
             styles.sendButton,
@@ -58,7 +72,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
               (!message.trim() || disabled) && styles.sendButtonTextDisabled,
             ]}
           >
-            Send
+            <SendHorizonal />
           </Text>
         </TouchableOpacity>
       </View>
