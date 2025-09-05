@@ -17,14 +17,16 @@ import { getUserId } from "../utils/generateUserId";
 import { LoadingSpinner } from "../components/common/LoadingSpinner";
 import { UserSearchModal } from "../components/chat/UserSearchModal";
 import { chatService } from "../services/chatService";
+import { useUserContext } from "../context/UserContext";
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, "ChatList">;
 
 export const ChatListScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
-  const [currentUserId, setCurrentUserId] = useState<string>("");
   const [userIdLoading, setUserIdLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
+
+  const { currentUserId, setCurrentUserId } = useUserContext();
 
   const { chats, loading, createDirectChat, refetch } = useChats(currentUserId);
   const [chatsWithParticipants, setChatsWithParticipants] = useState<Chat[]>(
@@ -61,7 +63,7 @@ export const ChatListScreen: React.FC = () => {
     };
 
     initializeUserId();
-  }, []);
+  }, [setCurrentUserId]);
 
   const handleChatPress = (chat: Chat) => {
     const chatName = chat.name || `Chat with other user`;
@@ -140,30 +142,26 @@ export const ChatListScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Messages</Text>
-        <Text style={styles.headerSubtitle}>You are: {currentUserId}</Text>
+      <View style={styles.content}>
+        {chatsWithParticipants.length === 0 ? (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyText}>No chats yet</Text>
+            <Text style={styles.emptySubText}>
+              Start a conversation to get started!
+            </Text>
+          </View>
+        ) : (
+          <FlatList
+            data={chatsWithParticipants}
+            renderItem={renderChatItem}
+            keyExtractor={(item) => item.id}
+            refreshControl={
+              <RefreshControl refreshing={loading} onRefresh={refetch} />
+            }
+            contentContainerStyle={styles.listContainer}
+          />
+        )}
       </View>
-
-      {chats.length === 0 ? (
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyTitle}>No chats yet</Text>
-          <Text style={styles.emptySubtitle}>
-            Tap the + button to start a new chat
-          </Text>
-        </View>
-      ) : (
-        <FlatList
-          data={chatsWithParticipants}
-          renderItem={renderChatItem}
-          keyExtractor={(item) => item.id}
-          style={styles.chatList}
-          refreshControl={
-            <RefreshControl refreshing={loading} onRefresh={refetch} />
-          }
-        />
-      )}
-
       <TouchableOpacity
         style={styles.fab}
         onPress={() => setModalVisible(true)}
@@ -184,59 +182,50 @@ export const ChatListScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#f5f5f5",
   },
-  header: {
-    backgroundColor: "#F8F8F8",
-    borderBottomWidth: 1,
-    borderBottomColor: "#E5E5EA",
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    alignItems: "center",
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#000000",
-  },
-  headerSubtitle: {
-    fontSize: 12,
-    color: "#666",
-    marginTop: 2,
-  },
-  chatList: {
+  content: {
     flex: 1,
   },
+  listContainer: {
+    paddingHorizontal: 16,
+    paddingTop: 8,
+  },
   chatItem: {
+    backgroundColor: "#fff",
+    padding: 16,
+    marginVertical: 4,
+    borderRadius: 12,
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 16,
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#F0F0F0",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
   },
   chatAvatar: {
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: "#007AFF",
+    backgroundColor: "#4f46e5",
     justifyContent: "center",
     alignItems: "center",
     marginRight: 12,
   },
   chatAvatarText: {
-    color: "#FFFFFF",
+    color: "#fff",
     fontSize: 18,
-    fontWeight: "600",
+    fontWeight: "bold",
   },
   chatInfo: {
     flex: 1,
   },
   chatName: {
     fontSize: 16,
-    fontWeight: "500",
-    color: "#000000",
-    marginBottom: 4,
+    fontWeight: "600",
+    color: "#333",
+    marginBottom: 2,
   },
   chatDate: {
     fontSize: 14,
@@ -246,46 +235,45 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   arrowText: {
-    fontSize: 20,
-    color: "#C7C7CC",
+    fontSize: 18,
+    color: "#ccc",
   },
-  emptyContainer: {
+  emptyState: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 32,
   },
-  emptyTitle: {
+  emptyText: {
     fontSize: 20,
     fontWeight: "600",
-    color: "#000000",
+    color: "#333",
     marginBottom: 8,
   },
-  emptySubtitle: {
+  emptySubText: {
     fontSize: 16,
     color: "#666",
     textAlign: "center",
-    lineHeight: 22,
   },
   fab: {
     position: "absolute",
-    bottom: 32,
+    bottom: 24,
     right: 24,
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: "#007AFF",
+    backgroundColor: "#4f46e5",
     justifyContent: "center",
     alignItems: "center",
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
     shadowRadius: 4,
-    elevation: 5,
+    elevation: 8,
   },
   fabText: {
-    color: "#FFFFFF",
+    color: "#fff",
     fontSize: 24,
-    fontWeight: "300",
+    fontWeight: "bold",
   },
 });
