@@ -18,6 +18,7 @@ import { LoadingSpinner } from "../components/common/LoadingSpinner";
 import { UserSearchModal } from "../components/chat/UserSearchModal";
 import { chatService } from "../services/chatService";
 import { useUserContext } from "../context/UserContext";
+import { userService } from "../services/userService";
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, "ChatList">;
 
@@ -25,6 +26,7 @@ export const ChatListScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
   const [userIdLoading, setUserIdLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
+  const [chatNames, setChatNames] = useState<Record<string, string>>({});
 
   const { currentUserId, setCurrentUserId } = useUserContext();
 
@@ -36,7 +38,7 @@ export const ChatListScreen: React.FC = () => {
   useEffect(() => {
     if (chats.length === 0) return;
 
-    const loadParticipants = async () => {
+    const loadChats = async () => {
       const chatsFull = await Promise.all(
         chats.map(async (chat) => {
           const participants = await chatService.getChatParticipants(chat.id);
@@ -44,9 +46,25 @@ export const ChatListScreen: React.FC = () => {
         })
       );
       setChatsWithParticipants(chatsFull);
+
+      const names: Record<string, string> = {};
+      for (const chat of chatsFull) {
+        if (chat.type === "direct") {
+          const other = chat.participants?.find((p) => p !== currentUserId);
+          if (other) {
+            const user = await userService.getUser(other);
+            names[chat.id] = user?.name || other;
+          } else {
+            names[chat.id] = "Direct Chat";
+          }
+        } else {
+          names[chat.id] = chat.name || "Group Chat";
+        }
+      }
+      setChatNames(names);
     };
 
-    loadParticipants();
+    loadChats();
   }, [chats]);
 
   useEffect(() => {
@@ -88,16 +106,24 @@ export const ChatListScreen: React.FC = () => {
     }
   };
 
-  const formatChatName = (chat: Chat) => {
-    if (chat.name) return chat.name;
-    if (chat.type === "direct") {
-      const others = chat.participants?.filter(
-        (participant) => participant !== currentUserId
-      );
-      return others?.join(", ") || "Direct Chat";
-    }
-    return "Group Chat";
-  };
+  // const formatChatName = async (chat: Chat) => {
+  //   if (chat.name) return chat.name;
+  //   if (chat.type === "direct") {
+  //     const others = chat.participants?.filter(
+  //       (participant) => participant !== currentUserId
+  //     );
+  //     const othersNames = await Promise.all(
+  //       others.map(async (o) => {
+  //         const otherUser = await userService.getUser(o);
+  //         const otherUserName = await otherUser.name;
+  //         console.log(otherUserName);
+  //         return otherUserName;
+  //       })
+  //     );
+  //     return othersNames?.join(",") || others?.join(", ") || "Direct Chat";
+  //   }
+  //   return "Group Chat";
+  // };
 
   const formatChatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -123,11 +149,13 @@ export const ChatListScreen: React.FC = () => {
     >
       <View style={styles.chatAvatar}>
         <Text style={styles.chatAvatarText}>
-          {formatChatName(item).charAt(0).toUpperCase()}
+          {chatNames[item.id]
+            ? chatNames[item.id].charAt(0)
+            : currentUserId?.charAt(0)}
         </Text>
       </View>
       <View style={styles.chatInfo}>
-        <Text style={styles.chatName}>{formatChatName(item)}</Text>
+        <Text style={styles.chatName}>{chatNames[item.id]}</Text>
         <Text style={styles.chatDate}>{formatChatDate(item.created_at)}</Text>
       </View>
       <View style={styles.chatArrow}>

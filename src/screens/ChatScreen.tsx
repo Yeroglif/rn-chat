@@ -15,12 +15,14 @@ import { MessageList } from "../components/chat/MessageList";
 import { MessageInput } from "../components/chat/MessageInput";
 import { RouteProp, useRoute } from "@react-navigation/native";
 import { RootStackParamList } from "../types";
+import { userService } from "../services/userService";
 
 type ChatScreenRouteProp = RouteProp<RootStackParamList, "Chat">;
 
 export const ChatScreen: React.FC = () => {
   const [currentUserId, setCurrentUserId] = useState<string>("");
   const [userIdLoading, setUserIdLoading] = useState(true);
+  const [currentUserName, setCurrentUserName] = useState<string>("");
   const route = useRoute<ChatScreenRouteProp>();
   const { chatId } = route.params;
   const { messages, loading, error, sendMessage, refetch } =
@@ -41,6 +43,23 @@ export const ChatScreen: React.FC = () => {
 
     initializeUserId();
   }, []);
+
+  useEffect(() => {
+    const loadCurrentUserName = async () => {
+      if (!currentUserId) {
+        return;
+      }
+      try {
+        const currentUser = await userService.getUser(currentUserId);
+        if (currentUser && currentUser.name) {
+          setCurrentUserName(currentUser.name);
+        }
+      } catch (err) {
+        console.error("Loading username error: ", err);
+      }
+    };
+    loadCurrentUserName();
+  }, [currentUserId]);
 
   const handleSendMessage = async (content: string) => {
     if (!currentUserId) return;
@@ -80,7 +99,9 @@ export const ChatScreen: React.FC = () => {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Group Chat</Text>
-        <Text style={styles.headerSubtitle}>You are: {currentUserId}</Text>
+        <Text style={styles.headerSubtitle}>
+          You are: {currentUserName || currentUserId}
+        </Text>
       </View>
 
       <MessageList messages={messages} currentUserId={currentUserId} />
