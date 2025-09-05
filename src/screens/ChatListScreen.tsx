@@ -16,6 +16,7 @@ import { useChats } from "../hooks/useChats";
 import { getUserId } from "../utils/generateUserId";
 import { LoadingSpinner } from "../components/common/LoadingSpinner";
 import { UserSearchModal } from "../components/chat/UserSearchModal";
+import { chatService } from "../services/chatService";
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, "ChatList">;
 
@@ -25,8 +26,26 @@ export const ChatListScreen: React.FC = () => {
   const [userIdLoading, setUserIdLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
 
-  const { chats, loading, error, createDirectChat, refetch } =
-    useChats(currentUserId);
+  const { chats, loading, createDirectChat, refetch } = useChats(currentUserId);
+  const [chatsWithParticipants, setChatsWithParticipants] = useState<Chat[]>(
+    []
+  );
+
+  useEffect(() => {
+    if (chats.length === 0) return;
+
+    const loadParticipants = async () => {
+      const chatsFull = await Promise.all(
+        chats.map(async (chat) => {
+          const participants = await chatService.getChatParticipants(chat.id);
+          return { ...chat, participants };
+        })
+      );
+      setChatsWithParticipants(chatsFull);
+    };
+
+    loadParticipants();
+  }, [chats]);
 
   useEffect(() => {
     const initializeUserId = async () => {
@@ -69,7 +88,12 @@ export const ChatListScreen: React.FC = () => {
 
   const formatChatName = (chat: Chat) => {
     if (chat.name) return chat.name;
-    if (chat.type === "direct") return "Direct Chat";
+    if (chat.type === "direct") {
+      const others = chat.participants?.filter(
+        (participant) => participant !== currentUserId
+      );
+      return others?.join(", ") || "Direct Chat";
+    }
     return "Group Chat";
   };
 
@@ -130,7 +154,7 @@ export const ChatListScreen: React.FC = () => {
         </View>
       ) : (
         <FlatList
-          data={chats}
+          data={chatsWithParticipants}
           renderItem={renderChatItem}
           keyExtractor={(item) => item.id}
           style={styles.chatList}
