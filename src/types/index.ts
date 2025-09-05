@@ -15,6 +15,13 @@ export interface Chat {
   created_by: string;
 }
 
+export interface User {
+  id: string;
+  name?: string;
+  email?: string;
+  created_at: string;
+}
+
 export interface ChatRow {
   chat_id: string;
   user_id: string;
