@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import * as FileSystem from "expo-file-system";
+import { decode } from "base64-arraybuffer";
 import { supabase } from "../services/supabase";
 import { Message } from "../types";
 
@@ -30,19 +32,50 @@ export const useMessages = (chatId: string | null) => {
   const sendMessage = async (
     content: string,
     userId: string,
-    photo_uri?: string,
+    photoUri?: string
   ) => {
     if (!chatId) return;
 
     try {
-      const { error } = await supabase
-        .from("messages")
-        .insert([
-          { content, user_id: userId, chat_id: chatId, photo_uri: photo_uri },
-        ]);
+      let uploadedPhotoUrl: string | undefined;
+
+      if (photoUri) {
+        const fileBase64 = await FileSystem.readAsStringAsync(photoUri, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
+        const fileArrayBuffer = decode(fileBase64);
+
+        const fileExt = photoUri.split(".").pop();
+        const fileName = `${Date.now()}.${fileExt}`;
+        const { error: uploadError } = await supabase.storage
+          .from("rn-chat-images")
+          .upload(fileName, fileArrayBuffer, {
+            contentType: `image/${fileExt}`,
+          });
+
+        if (uploadError) {
+          throw uploadError;
+        }
+
+        const { data: urlData } = supabase.storage
+          .from("rn-chat-images")
+          .getPublicUrl(fileName);
+
+        uploadedPhotoUrl = urlData.publicUrl;
+      }
+
+      const { error } = await supabase.from("messages").insert([
+        {
+          content,
+          user_id: userId,
+          chat_id: chatId,
+          photo_uri: uploadedPhotoUrl,
+        },
+      ]);
 
       if (error) throw error;
     } catch (err) {
+      console.error(err);
       setError(err instanceof Error ? err.message : "Failed to send message");
     }
   };
