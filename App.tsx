@@ -1,50 +1,33 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { NavigationContainer } from "@react-navigation/native";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { ChatListScreen } from "./src/screens/ChatListScreen";
-import { ChatScreen } from "./src/screens/ChatScreen";
-import { TouchableOpacity, Text } from "react-native";
-import { Settings } from "lucide-react-native";
-import { SettingsScreen } from "./src/screens/SettingsScreen";
 import { UserProvider } from "./src/context/UserContext";
-
-export type RootStackParamList = {
-  ChatList: undefined;
-  Chat: { chatId: string; chatName: string };
-  Settings: undefined;
-};
-
-const Stack = createNativeStackNavigator<RootStackParamList>();
+import { useAuth } from "./src/hooks/useAuth";
+import supabase from "./src/services/supabase";
+import RootNavigator from "./src/navigation/RootNavigator";
 
 export default function App() {
+  const setSession = useAuth((s) => s.setSession);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session);
+    });
+
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setSession(session);
+      }
+    );
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, []);
+
   return (
     <UserProvider>
       <NavigationContainer>
-        <Stack.Navigator initialRouteName="ChatList">
-          <Stack.Screen
-            name="ChatList"
-            component={ChatListScreen}
-            options={({ navigation }) => ({
-              title: "Chat",
-              headerRight: () => (
-                <TouchableOpacity
-                  onPress={() => navigation.navigate("Settings")}
-                  style={{ marginRight: 16 }}
-                >
-                  <Text style={{ fontSize: 18 }}>
-                    <Settings />
-                  </Text>
-                </TouchableOpacity>
-              ),
-            })}
-          />
-          <Stack.Screen name="Chat" component={ChatScreen} />
-          <Stack.Screen
-            name="Settings"
-            component={SettingsScreen}
-            options={{ title: "Settings" }}
-          />
-        </Stack.Navigator>
+        <RootNavigator />
       </NavigationContainer>
     </UserProvider>
   );
