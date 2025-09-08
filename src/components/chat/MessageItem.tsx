@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
 import { Message } from "../../types";
 import { useImageModal } from "../../hooks/useImageModal";
+import { userService } from "../../services/userService";
 
 interface MessageItemProps {
   message: Message;
@@ -12,12 +13,22 @@ export const MessageItem: React.FC<MessageItemProps> = ({
   message,
   isCurrentUser,
 }) => {
+  const [otherUserName, setOtherUserName] = useState<string | undefined>(
+    undefined
+  );
   const { openModal } = useImageModal();
 
   const formatTime = (timestamp: string) => {
     const date = new Date(timestamp);
     return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
+
+  useEffect(() => {
+    (async () => {
+      const otherUser = await userService.getUser(message.user_id);
+      setOtherUserName(otherUser.name);
+    })();
+  }, []);
 
   return (
     <View
@@ -33,7 +44,9 @@ export const MessageItem: React.FC<MessageItemProps> = ({
         ]}
       >
         {!isCurrentUser && (
-          <Text style={styles.username}>{message.user_id}</Text>
+          <Text style={styles.username}>
+            {otherUserName || message.user_id}
+          </Text>
         )}
 
         {message.content ? (
