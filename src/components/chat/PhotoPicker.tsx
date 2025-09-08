@@ -8,7 +8,7 @@ import {
   Alert,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
-import { Camera } from "lucide-react-native";
+import { Camera, X } from "lucide-react-native";
 
 interface PhotoPickerProps {
   photoUri?: string;
@@ -85,14 +85,13 @@ const PhotoPicker: React.FC<PhotoPickerProps> = ({
         <View style={styles.photoContainer}>
           <Image source={{ uri: photoUri }} style={styles.photo} />
           <View style={styles.photoActions}>
-            <TouchableOpacity style={styles.changeButton} onPress={pickImage}>
-              <Text style={styles.changeButtonText}>Change</Text>
-            </TouchableOpacity>
             <TouchableOpacity
               style={styles.removeButton}
               onPress={onPhotoRemoved}
             >
-              <Text style={styles.removeButtonText}>Remove</Text>
+              <Text style={styles.removeButtonText}>
+                <X />
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -131,35 +130,32 @@ const styles = StyleSheet.create({
     color: "#666",
   },
   photoContainer: {
+    position: "relative",
+    bottom: 10,
+    margin: 20,
     alignItems: "center",
   },
   photo: {
-    width: 200,
-    height: 150,
+    position: "absolute",
+    width: 40,
+    height: 40,
     borderRadius: 8,
     marginBottom: 8,
   },
   photoActions: {
+    position: "absolute",
     flexDirection: "row",
+    justifyContent: "center",
+    width: 40,
+    height: 40,
     gap: 12,
   },
-  changeButton: {
-    backgroundColor: "#007AFF",
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 6,
-  },
-  changeButtonText: {
-    color: "white",
-    fontWeight: "500",
-  },
   removeButton: {
-    backgroundColor: "#ff4444",
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    bottom: 23,
     borderRadius: 6,
   },
   removeButtonText: {
+    textAlign: "center",
     color: "white",
     fontWeight: "500",
   },

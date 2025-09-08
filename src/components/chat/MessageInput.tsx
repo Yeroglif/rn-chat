@@ -76,9 +76,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
           disabled={(!message.trim() && !photoUri) || disabled}
         >
           <SendHorizonal
-            color={
-              (!message.trim() && !photoUri) || disabled ? "#aaa" : "#007AFF"
-            }
+ 
             size={24}
           />
         </TouchableOpacity>
@@ -94,11 +92,13 @@ const styles = StyleSheet.create({
     borderTopColor: "#E5E5EA",
   },
   inputContainer: {
+    display: "flex",
     flexDirection: "row",
     alignItems: "flex-end",
     paddingHorizontal: 16,
     paddingVertical: 12,
     minHeight: 60,
+    gap: 10,
   },
   textInput: {
     flex: 1,
@@ -117,6 +117,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     paddingHorizontal: 20,
     paddingVertical: 10,
+    marginBottom: 10,
     justifyContent: "center",
     alignItems: "center",
   },
