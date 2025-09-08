@@ -19,6 +19,7 @@ import { UserSearchModal } from "../components/chat/UserSearchModal";
 import { chatService } from "../services/chatService";
 import { useUserContext } from "../context/UserContext";
 import { userService } from "../services/userService";
+import { ChevronRight } from "lucide-react-native";
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, "ChatList">;
 
@@ -106,25 +107,6 @@ export const ChatListScreen: React.FC = () => {
     }
   };
 
-  // const formatChatName = async (chat: Chat) => {
-  //   if (chat.name) return chat.name;
-  //   if (chat.type === "direct") {
-  //     const others = chat.participants?.filter(
-  //       (participant) => participant !== currentUserId
-  //     );
-  //     const othersNames = await Promise.all(
-  //       others.map(async (o) => {
-  //         const otherUser = await userService.getUser(o);
-  //         const otherUserName = await otherUser.name;
-  //         console.log(otherUserName);
-  //         return otherUserName;
-  //       })
-  //     );
-  //     return othersNames?.join(",") || others?.join(", ") || "Direct Chat";
-  //   }
-  //   return "Group Chat";
-  // };
-
   const formatChatDate = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
@@ -159,7 +141,7 @@ export const ChatListScreen: React.FC = () => {
         <Text style={styles.chatDate}>{formatChatDate(item.created_at)}</Text>
       </View>
       <View style={styles.chatArrow}>
-        <Text style={styles.arrowText}>{`>`}</Text>
+        <Text style={styles.arrowText}><ChevronRight/></Text>
       </View>
     </TouchableOpacity>
   );
