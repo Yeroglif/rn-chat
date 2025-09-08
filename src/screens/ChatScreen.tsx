@@ -16,6 +16,7 @@ import { MessageInput } from "../components/chat/MessageInput";
 import { RouteProp, useRoute } from "@react-navigation/native";
 import { RootStackParamList } from "../types";
 import { userService } from "../services/userService";
+import { ImageModal } from "../components/common/ImageModal";
 
 type ChatScreenRouteProp = RouteProp<RootStackParamList, "Chat">;
 
@@ -110,6 +111,7 @@ export const ChatScreen: React.FC = () => {
         onSendMessage={handleSendMessage}
         disabled={!currentUserId}
       />
+      <ImageModal />
     </SafeAreaView>
   );
 };

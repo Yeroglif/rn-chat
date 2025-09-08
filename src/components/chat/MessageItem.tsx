@@ -1,6 +1,7 @@
 import React from "react";
-import { View, Text, StyleSheet, Image } from "react-native";
+import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
 import { Message } from "../../types";
+import { useImageModal } from "../../hooks/useImageModal";
 
 interface MessageItemProps {
   message: Message;
@@ -11,6 +12,8 @@ export const MessageItem: React.FC<MessageItemProps> = ({
   message,
   isCurrentUser,
 }) => {
+  const { openModal } = useImageModal();
+
   const formatTime = (timestamp: string) => {
     const date = new Date(timestamp);
     return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
@@ -45,11 +48,19 @@ export const MessageItem: React.FC<MessageItemProps> = ({
         ) : null}
 
         {message.photo_uri ? (
-          <Image
-            source={{ uri: message.photo_uri }}
-            style={styles.messageImage}
-            resizeMode="cover"
-          />
+          <TouchableOpacity
+            onPress={() => {
+              if (message.photo_uri) {
+                openModal(message.photo_uri);
+              }
+            }}
+          >
+            <Image
+              source={{ uri: message.photo_uri }}
+              style={styles.messageImage}
+              resizeMode="cover"
+            />
+          </TouchableOpacity>
         ) : null}
 
         <Text
