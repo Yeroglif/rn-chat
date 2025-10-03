@@ -6,14 +6,14 @@ import {
   StyleSheet,
   TouchableOpacity,
   KeyboardAvoidingView,
-  TouchableWithoutFeedback,
   Platform,
   Keyboard,
+  TouchableWithoutFeedback,
 } from "react-native";
 import { useAuth } from "../hooks/useAuth";
 
 export const AuthScreen = () => {
-  const { signIn, signUp, loading } = useAuth();
+  const { signIn, signUp, loading, error, clearError } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -30,7 +30,10 @@ export const AuthScreen = () => {
           <TextInput
             style={styles.input}
             value={email}
-            onChangeText={setEmail}
+            onChangeText={(text) => {
+              setEmail(text);
+              if (error) clearError();
+            }}
             autoCapitalize="none"
             keyboardType="email-address"
             placeholder="your_email@example.com"
@@ -40,10 +43,15 @@ export const AuthScreen = () => {
           <TextInput
             style={styles.input}
             value={password}
-            onChangeText={setPassword}
+            onChangeText={(text) => {
+              setPassword(text);
+              if (error) clearError();
+            }}
             secureTextEntry
             placeholder="********"
           />
+
+          {error && <Text style={styles.errorText}>{error}</Text>}
 
           <TouchableOpacity
             style={[styles.button, styles.signInButton]}
@@ -121,5 +129,10 @@ const styles = StyleSheet.create({
     color: "#007AFF",
     fontSize: 18,
     fontWeight: "bold",
+  },
+  errorText: {
+    color: "red",
+    marginBottom: 10,
+    textAlign: "center",
   },
 });
