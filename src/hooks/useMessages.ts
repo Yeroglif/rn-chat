@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import * as FileSystem from "expo-file-system";
+import * as FileSystem from "expo-file-system/legacy";
 import { decode } from "base64-arraybuffer";
 import { supabase } from "../services/supabase";
 import { Message } from "../types";
