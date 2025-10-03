@@ -17,6 +17,7 @@ import { RouteProp, useRoute } from "@react-navigation/native";
 import { RootStackParamList } from "../types";
 import { userService } from "../services/userService";
 import { ImageModal } from "../components/common/ImageModal";
+import { useAuth } from "../hooks/useAuth";
 
 type ChatScreenRouteProp = RouteProp<RootStackParamList, "Chat">;
 
@@ -28,11 +29,12 @@ export const ChatScreen: React.FC = () => {
   const { chatId } = route.params;
   const { messages, loading, error, sendMessage, refetch } =
     useMessages(chatId);
+  const { user } = useAuth();
 
   useEffect(() => {
     const initializeUserId = async () => {
       try {
-        const userId = await getUserId();
+        const userId = user?.id || (await getUserId());
         setCurrentUserId(userId);
       } catch (err) {
         console.error("Failed to get user ID:", err);
@@ -52,8 +54,8 @@ export const ChatScreen: React.FC = () => {
       }
       try {
         const currentUser = await userService.getUser(currentUserId);
-        if (currentUser && currentUser.name) {
-          setCurrentUserName(currentUser.name);
+        if (currentUser && currentUser.username) {
+          setCurrentUserName(currentUser.username);
         }
       } catch (err) {
         console.error("Loading username error: ", err);
@@ -105,7 +107,7 @@ export const ChatScreen: React.FC = () => {
         </Text>
       </View>
 
-      <MessageList messages={messages} currentUserId={currentUserId} />
+      <MessageList messages={messages} />
 
       <MessageInput
         onSendMessage={handleSendMessage}

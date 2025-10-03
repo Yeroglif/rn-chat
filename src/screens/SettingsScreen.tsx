@@ -9,20 +9,22 @@ import {
   Alert,
 } from "react-native";
 import { userService } from "../services/userService";
-import { useUserContext } from "../context/UserContext";
+import { useAuth } from "../hooks/useAuth";
 
 export const SettingsScreen: React.FC = () => {
   const [userName, setUserName] = useState<string>("");
-  const { currentUserId } = useUserContext();
   const [loading, setLoading] = useState(false);
+  const { user } = useAuth();
+  const { id: currentUserId } = user || {};
 
   useEffect(() => {
     const loadUser = async () => {
       if (!currentUserId) return;
       try {
         const currentUser = await userService.getUser(currentUserId);
-        if (currentUser?.name) {
-          setUserName(currentUser.name);
+        console.log("Current user name:", currentUser?.username);
+        if (currentUser?.username) {
+          setUserName(currentUser.username);
         }
       } catch (err) {
         console.error(err);
@@ -53,9 +55,7 @@ export const SettingsScreen: React.FC = () => {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Settings</Text>
-      <Text style={styles.debug}>
-        Current User ID: {userName || "Not set"}
-      </Text>
+      <Text style={styles.debug}>Current User ID: {user?.id || "Not set"}</Text>
 
       <View style={styles.inputGroup}>
         <Text style={styles.label}>User name: {userName}</Text>

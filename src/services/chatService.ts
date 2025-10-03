@@ -44,6 +44,8 @@ export const chatService = {
       .select()
       .single();
 
+    console.log("New chat created:", chat);
+
     if (chatError) throw chatError;
 
     const { error: participantError } = await supabase

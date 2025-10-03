@@ -3,35 +3,33 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   FlatList,
   TouchableOpacity,
   RefreshControl,
   Alert,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Chat, RootStackParamList } from "../types";
 import { useChats } from "../hooks/useChats";
-import { getUserId } from "../utils/generateUserId";
-import { LoadingSpinner } from "../components/common/LoadingSpinner";
 import { UserSearchModal } from "../components/chat/UserSearchModal";
 import { chatService } from "../services/chatService";
-import { useUserContext } from "../context/UserContext";
-import { userService } from "../services/userService";
 import { ChevronRight } from "lucide-react-native";
+import { useAuth } from "../hooks/useAuth";
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, "ChatList">;
 
 export const ChatListScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
-  const [userIdLoading, setUserIdLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
   const [chatNames, setChatNames] = useState<Record<string, string>>({});
 
-  const { currentUserId, setCurrentUserId } = useUserContext();
+  const { user } = useAuth();
 
-  const { chats, loading, createDirectChat, refetch } = useChats(currentUserId);
+  const { chats, loading, createDirectChat, refetch } = useChats(
+    user?.id || null
+  );
   const [chatsWithParticipants, setChatsWithParticipants] = useState<Chat[]>(
     []
   );
@@ -51,10 +49,9 @@ export const ChatListScreen: React.FC = () => {
       const names: Record<string, string> = {};
       for (const chat of chatsFull) {
         if (chat.type === "direct") {
-          const other = chat.participants?.find((p) => p !== currentUserId);
+          const other = chat.participants?.find((p) => p !== user?.id);
           if (other) {
-            const user = await userService.getUser(other);
-            names[chat.id] = user?.name || other;
+            names[chat.id] = user?.user_metadata.name || other;
           } else {
             names[chat.id] = "Direct Chat";
           }
@@ -67,22 +64,6 @@ export const ChatListScreen: React.FC = () => {
 
     loadChats();
   }, [chats]);
-
-  useEffect(() => {
-    const initializeUserId = async () => {
-      try {
-        const userId = await getUserId();
-        setCurrentUserId(userId);
-      } catch (err) {
-        console.error("Failed to get user ID:", err);
-        Alert.alert("Error", "Failed to initialize user ID");
-      } finally {
-        setUserIdLoading(false);
-      }
-    };
-
-    initializeUserId();
-  }, [setCurrentUserId]);
 
   const handleChatPress = (chat: Chat) => {
     const chatName = chat.name || `Chat with other user`;
@@ -133,7 +114,7 @@ export const ChatListScreen: React.FC = () => {
         <Text style={styles.chatAvatarText}>
           {chatNames[item.id]
             ? chatNames[item.id].charAt(0)
-            : currentUserId?.charAt(0)}
+            : user?.user_metadata.name?.charAt(0)}
         </Text>
       </View>
       <View style={styles.chatInfo}>
@@ -141,14 +122,12 @@ export const ChatListScreen: React.FC = () => {
         <Text style={styles.chatDate}>{formatChatDate(item.created_at)}</Text>
       </View>
       <View style={styles.chatArrow}>
-        <Text style={styles.arrowText}><ChevronRight/></Text>
+        <Text style={styles.arrowText}>
+          <ChevronRight />
+        </Text>
       </View>
     </TouchableOpacity>
   );
-
-  if (userIdLoading || loading) {
-    return <LoadingSpinner message="Loading chats..." />;
-  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -183,7 +162,6 @@ export const ChatListScreen: React.FC = () => {
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
         onStartChat={handleStartNewChat}
-        currentUserId={currentUserId}
       />
     </SafeAreaView>
   );

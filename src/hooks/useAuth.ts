@@ -36,15 +36,35 @@ export const useAuth = create<AuthState>((set) => ({
 
   signUp: async (email, password) => {
     set({ loading: true });
+
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
     });
+
     if (error) {
       set({ error: error.message });
     } else {
       set({ user: data.user, session: data.session });
+
+      if (data.user?.id) {
+        const { error: insertError } = await supabase
+          .from("user_profiles")
+          .insert({
+            id: data.user.id,
+            username: data.user.user_metadata.name || "New User",
+            created_at: new Date().toISOString(),
+          });
+
+        if (insertError) {
+          set({ error: insertError.message });
+        } else {
+        }
+      } else {
+        set({ error: "User ID is missing" });
+      }
     }
+
     set({ loading: false });
   },
 

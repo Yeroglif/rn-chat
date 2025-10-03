@@ -4,7 +4,7 @@ export interface Message {
   content: string;
   created_at: string;
   chat_id: string;
-  photo_uri?: string
+  photo_uri?: string;
 }
 
 export interface Chat {
@@ -17,8 +17,8 @@ export interface Chat {
 }
 
 export interface User {
+  username: any;
   id: string;
-  name?: string;
   email?: string;
   created_at: string;
 }

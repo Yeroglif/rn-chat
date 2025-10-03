@@ -7,29 +7,30 @@ import {
   TouchableOpacity,
   FlatList,
   StyleSheet,
-  SafeAreaView,
   ActivityIndicator,
   Alert,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { userService } from "../../services/userService";
+import { useAuth } from "../../hooks/useAuth";
 
 interface UserSearchModalProps {
   visible: boolean;
   onClose: () => void;
   onStartChat: (userId: string) => void;
-  currentUserId: string | null;
 }
 
 export const UserSearchModal: React.FC<UserSearchModalProps> = ({
   visible,
   onClose,
   onStartChat,
-  currentUserId,
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<string[]>([]);
   const [searching, setSearching] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+
+  const { user } = useAuth();
 
   const handleSearch = async (query: string) => {
     setSearchQuery(query);
@@ -42,9 +43,7 @@ export const UserSearchModal: React.FC<UserSearchModalProps> = ({
     try {
       setSearching(true);
       const results = await userService.searchUsers(query);
-      const filteredResults = results.filter(
-        (userId) => userId !== currentUserId
-      );
+      const filteredResults = results.filter((userId) => userId !== user?.id);
       setSearchResults(filteredResults);
     } catch (error) {
       console.error("Search error:", error);

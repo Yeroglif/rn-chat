@@ -26,7 +26,7 @@ export const MessageItem: React.FC<MessageItemProps> = ({
   useEffect(() => {
     (async () => {
       const otherUser = await userService.getUser(message.user_id);
-      setOtherUserName(otherUser.name);
+      setOtherUserName(otherUser.username);
     })();
   }, []);
 

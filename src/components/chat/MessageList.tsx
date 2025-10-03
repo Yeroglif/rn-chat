@@ -2,17 +2,16 @@ import React, { useRef, useEffect } from "react";
 import { FlatList, StyleSheet } from "react-native";
 import { Message } from "../../types";
 import { MessageItem } from "./MessageItem";
+import { useAuth } from "../../hooks/useAuth";
 
 interface MessageListProps {
   messages: Message[];
-  currentUserId: string;
 }
 
-export const MessageList: React.FC<MessageListProps> = ({
-  messages,
-  currentUserId,
-}) => {
+export const MessageList: React.FC<MessageListProps> = ({ messages }) => {
   const flatListRef = useRef<FlatList>(null);
+
+  const { user } = useAuth();
 
   useEffect(() => {
     if (messages.length > 0) {
@@ -23,10 +22,7 @@ export const MessageList: React.FC<MessageListProps> = ({
   }, [messages]);
 
   const renderMessage = ({ item }: { item: Message }) => (
-    <MessageItem
-      message={item}
-      isCurrentUser={item.user_id === currentUserId}
-    />
+    <MessageItem message={item} isCurrentUser={item.user_id === user?.id} />
   );
 
   const keyExtractor = (item: Message) => item.id;

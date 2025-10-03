@@ -2,18 +2,9 @@ import { User } from "../types";
 import supabase from "./supabase";
 
 export const userService = {
-  async getAllUsers(): Promise<User[]> {
-    const { data, error } = await supabase.from("users").select(`*`);
-
-    if (error) {
-      throw error;
-    }
-    return data || [];
-  },
-
   async getUser(id: string): Promise<User> {
     const { data, error } = await supabase
-      .from("users")
+      .from("user_profiles")
       .select(`*`)
       .eq("id", id)
       .single();
@@ -27,8 +18,8 @@ export const userService = {
 
   async updateUserName(id: string, newName: string) {
     const { error } = await supabase
-      .from("users")
-      .update({ name: newName })
+      .from("user_profiles")
+      .update({ username: newName })
       .eq("id", id);
 
     if (error) {
@@ -39,13 +30,13 @@ export const userService = {
     if (!query.trim()) return [];
 
     const { data, error } = await supabase
-      .from("users")
-      .select("id")
-      .ilike("id", `%${query}%`);
+      .from("user_profiles")
+      .select("username")
+      .ilike("username", `%${query}%`);
 
     if (error) throw error;
 
-    const uniqueUsers = [...new Set(data?.map((m) => m.id) || [])];
+    const uniqueUsers = [...new Set(data?.map((m) => m.username) || [])];
     return uniqueUsers;
   },
 };
